@@ -1,6 +1,6 @@
 public interface IPuzzle
 {
-    void ActivatePuzzle();
+    bool ActivatePuzzle();
     void DiactivatePuzzle();
     void ResolvePuzzle();
 }

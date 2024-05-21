@@ -9,12 +9,15 @@ public class PlayerController : Controller
     [SerializeField] private Animator _animator;
     
     private Vector3 _input;
-
     private Rigidbody _rigidbody;
 
-    private const string _horizontalAxis = "Horizontal";
-    private const string _verticalAxis = "Vertical";
+    private const string HORIZONTAL_AXIS = "Horizontal";
+    private const string VERTICAL_AXIS = "Vertical";
 
+    private readonly int RUN_ANIMATION = Animator.StringToHash("IsRun");
+
+    public bool IsMove { get; set; } = true;
+    
     private void Start()
     {
         _rigidbody = GetComponent<Rigidbody>();
@@ -33,12 +36,17 @@ public class PlayerController : Controller
 
     private void Inputs()
     {
-        _input.x = Input.GetAxis(_horizontalAxis);
-        _input.z = Input.GetAxis(_verticalAxis);
+        _input.x = Input.GetAxis(HORIZONTAL_AXIS);
+        _input.z = Input.GetAxis(VERTICAL_AXIS);
     }
 
     private void Move()
     {
+        if (!IsMove)
+        {
+            return;
+        }
+        
         Vector3 move = _input;
 
         _rigidbody.MovePosition(transform.position + move * _speed * Time.fixedDeltaTime);
@@ -47,11 +55,11 @@ public class PlayerController : Controller
         {
             float angle = Mathf.Atan2(move.z, -move.x) * Mathf.Rad2Deg - 90;
             _body.rotation = Quaternion.AngleAxis(angle, Vector3.up);
-            _animator.SetBool("IsRun", true);
+            _animator.SetBool(RUN_ANIMATION, true);
         }
         else
         {
-            _animator.SetBool("IsRun", false);
+            _animator.SetBool(RUN_ANIMATION, false);
         }
     }
 }

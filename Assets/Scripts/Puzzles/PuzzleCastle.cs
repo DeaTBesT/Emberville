@@ -1,56 +1,75 @@
+using System;
+using System.Linq;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.UI;
 
-public class PuzzleCastle : Puzzle
+public class PuzzleCastle : MonoBehaviour, IPuzzle
 {
-    [SerializeField] private int _needPassword;
+    [SerializeField] private string _taskTitle;
+    [SerializeField] private string[] _answers;
+        
+    [Header("UI")]
+    [SerializeField] private GameObject _puzzleCanvas;
+    [SerializeField] private TextMeshProUGUI _textTask;
+    [SerializeField] private TMP_InputField _answerInputField;
+    [SerializeField] private Button _buttonSubmitAnswer;
 
-    [SerializeField] private UnityEvent _onActivatePuzzle;
-    [SerializeField] private UnityEvent _onResolvePuzzle;
+    [Header("Events")] 
+    [SerializeField] private UnityEvent _onResolve;
     
-    private int _password;
-    public string Password
-    {
-        set
-        {
-            if (string.IsNullOrEmpty(value))
-            {
-                return;
-            }
-            
-            _password = int.Parse(value);
+    private string _password;
+    
+    public bool IsCanUse { get; set; } = false;
 
-            if (_password == _needPassword)
-            {
-                ResolvePuzzle();
-            }
-        }
+    private void OnEnable()
+    {
+        _answerInputField.onValueChanged.AddListener(OnAnswerChanged);
+        _buttonSubmitAnswer.onClick.AddListener(SubmitAnswer);
     }
 
-    private bool _isCanUse = false;
-    
-    public void IsCanUse()
+    private void OnDisable()
     {
-        _isCanUse = true;
+        _answerInputField.onValueChanged.RemoveListener(OnAnswerChanged);
+        _buttonSubmitAnswer.onClick.RemoveListener(SubmitAnswer);
     }
-    
-    public override void ActivatePuzzle()
+
+    public bool ActivatePuzzle()
     {
-        if (!_isCanUse)
+        if (!IsCanUse)
         {
-            return;
+            return false;
         }
         
-        _onActivatePuzzle?.Invoke();
+        _puzzleCanvas.SetActive(true);
+        _textTask.text = _taskTitle;
+
+        return true;
     }
 
-    public override void DiactivatePuzzle()
+    public void DiactivatePuzzle()
     {
-        throw new System.NotImplementedException();
+        _puzzleCanvas.SetActive(false);
     }
 
-    public override void ResolvePuzzle()
+    public void ResolvePuzzle()
     {
-        _onResolvePuzzle?.Invoke();
+        _puzzleCanvas.SetActive(false);
+        
+        _onResolve?.Invoke();
+    }
+
+    private void SubmitAnswer()
+    {
+        if (_answers.Contains(_password))
+        {
+            ResolvePuzzle();
+        }
+    }
+
+    private void OnAnswerChanged(string text)
+    {
+        _password = text;
     }
 }
