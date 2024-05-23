@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -78,12 +77,17 @@ public class InteractorController : Controller
         _isDiactivatingException = false;
     }
 
-    private void OnTriggerEnter2D(Collider2D other)
+    private void OnTriggerEnter(Collider other)
     {
         if (other.TryGetComponent(out IPuzzle interactable))
         {
-            _interactableObjects.Add(interactable);
+            if (_interactableObjects.Contains(interactable))
+            {
+                return;
+            }
 
+            _interactableObjects.Add(interactable);
+            
             if (_distanceChecker == null)
             {
                 _distanceChecker = StartCoroutine(CheckDistance());
@@ -92,7 +96,7 @@ public class InteractorController : Controller
         }
     }
 
-    private void OnTriggerExit2D(Collider2D other)
+    private void OnTriggerExit(Collider other)
     {
         if (other.TryGetComponent(out IPuzzle interactable))
         {
@@ -120,6 +124,18 @@ public class InteractorController : Controller
             });
 
             yield return null;
+        }
+    }
+
+    public void EndInteraction()
+    {
+        _interactableObjects.RemoveAt(0);
+        
+        if ((_distanceChecker != null) && (_interactableObjects.Count <= 0))
+        {
+            StopCoroutine(CheckDistance());
+            _distanceChecker = null;
+            _textInteract.SetActive(false);
         }
     }
 }
